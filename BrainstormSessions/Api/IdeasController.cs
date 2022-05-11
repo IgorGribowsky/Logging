@@ -6,9 +6,11 @@ using BrainstormSessions.ClientModels;
 using BrainstormSessions.Core.Interfaces;
 using BrainstormSessions.Core.Model;
 using Microsoft.AspNetCore.Mvc;
+using Serilog;
 
 namespace BrainstormSessions.Api
 {
+    [Route("api/ideas")]
     public class IdeasController : ControllerBase
     {
         private readonly IBrainstormSessionRepository _sessionRepository;
@@ -28,6 +30,7 @@ namespace BrainstormSessions.Api
                 return NotFound(sessionId);
             }
 
+            Log.Information($"Ideas loading started");
             var result = session.Ideas.Select(idea => new IdeaDTO()
             {
                 Id = idea.Id,
@@ -35,6 +38,7 @@ namespace BrainstormSessions.Api
                 Description = idea.Description,
                 DateCreated = idea.DateCreated
             }).ToList();
+            Log.Information($"Ideas loading finished");
 
             return Ok(result);
         }
@@ -42,6 +46,7 @@ namespace BrainstormSessions.Api
         [HttpPost("create")]
         public async Task<IActionResult> Create([FromBody]NewIdeaModel model)
         {
+            Log.Information($"Idea {model.Name} creation started");
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -62,6 +67,10 @@ namespace BrainstormSessions.Api
             session.AddIdea(idea);
 
             await _sessionRepository.UpdateAsync(session);
+
+            Log.Information($"Idea {idea.Name} created");
+
+            throw new Exception("Exception for test error logging");
 
             return Ok(session);
         }

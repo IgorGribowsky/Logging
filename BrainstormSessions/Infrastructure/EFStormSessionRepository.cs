@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using BrainstormSessions.Core.Interfaces;
 using BrainstormSessions.Core.Model;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace BrainstormSessions.Infrastructure
 {
@@ -18,29 +19,60 @@ namespace BrainstormSessions.Infrastructure
 
         public Task<BrainstormSession> GetByIdAsync(int id)
         {
-            return _dbContext.BrainstormSessions
+            Log.Debug($"GetByIdAsync execution started. Id: {id}");
+
+            var session = _dbContext.BrainstormSessions
                 .Include(s => s.Ideas)
                 .FirstOrDefaultAsync(s => s.Id == id);
+
+            if (session == null)
+            {
+                Log.Debug($"GetByIdAsync executed. Session with id = {id} is not found");
+            }
+            else
+            {
+                Log.Debug($"GetByIdAsync executed. Session with id = {id} is found");
+            }
+
+            return session;
         }
 
         public Task<List<BrainstormSession>> ListAsync()
         {
-            return _dbContext.BrainstormSessions
+            Log.Debug($"ListAsync execution started");
+
+            var sessions = _dbContext.BrainstormSessions
                 .Include(s => s.Ideas)
                 .OrderByDescending(s => s.DateCreated)
                 .ToListAsync();
+
+            Log.Debug($"ListAsync executed");
+
+            return sessions;
         }
 
         public Task AddAsync(BrainstormSession session)
         {
+            Log.Debug($"AddAsync execution started");
+
             _dbContext.BrainstormSessions.Add(session);
-            return _dbContext.SaveChangesAsync();
+            var result = _dbContext.SaveChangesAsync();
+
+            Log.Debug($"AddAsync executed");
+
+            return result;
         }
 
         public Task UpdateAsync(BrainstormSession session)
         {
+            Log.Debug($"AddAsync execution started");
+
             _dbContext.Entry(session).State = EntityState.Modified;
-            return _dbContext.SaveChangesAsync();
+            var result = _dbContext.SaveChangesAsync();
+
+            Log.Debug($"AddAsync executed");
+
+            return result;
         }
     }
 }

@@ -6,6 +6,7 @@ using BrainstormSessions.Core.Interfaces;
 using BrainstormSessions.Core.Model;
 using BrainstormSessions.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using Serilog;
 
 namespace BrainstormSessions.Controllers
 {
@@ -20,7 +21,9 @@ namespace BrainstormSessions.Controllers
 
         public async Task<IActionResult> Index()
         {
+            Log.Information($"Session list loading started");
             var sessionList = await _sessionRepository.ListAsync();
+            Log.Information($"Session list loading finished");
 
             var model = sessionList.Select(session => new StormSessionViewModel()
             {
@@ -44,15 +47,18 @@ namespace BrainstormSessions.Controllers
         {
             if (!ModelState.IsValid)
             {
+                Log.Information($"Session {model.SessionName} is invalid. BadRequest returned");
                 return BadRequest(ModelState);
             }
             else
             {
+                Log.Information($"Session {model.SessionName} creation started");
                 await _sessionRepository.AddAsync(new BrainstormSession()
                 {
                     DateCreated = DateTimeOffset.Now,
                     Name = model.SessionName
                 });
+                Log.Information($"Session {model.SessionName} created");
             }
 
             return RedirectToAction(actionName: nameof(Index));

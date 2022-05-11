@@ -3,12 +3,16 @@ using System.Linq;
 using System.Threading.Tasks;
 using BrainstormSessions.Core.Interfaces;
 using BrainstormSessions.Core.Model;
+using BrainstormSessions.Filters;
 using BrainstormSessions.Infrastructure;
+using BrainstormSessions.Logging;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Serilog;
+using Serilog.Events;
 
 namespace BrainstormSessions
 {
@@ -16,10 +20,28 @@ namespace BrainstormSessions
     {
         public void ConfigureServices(IServiceCollection services)
         {
+            Log.Logger = new LoggerConfiguration()
+                .Enrich.FromLogContext()
+                .MinimumLevel.Debug()
+                .WriteTo.Logger(l => l
+                    .Filter.ByIncludingOnly(e => e.Level == LogEventLevel.Debug)
+                    .WriteTo.File("Logs/debug_logs.txt"))
+                .WriteTo.Logger(l => l
+                    .Filter.ByIncludingOnly(e => e.Level == LogEventLevel.Error)
+                    .WriteTo.File("Logs/error_logs.txt")
+                    .WriteTo.EmailSink("ig-gri@mail.ru"))
+                .WriteTo.Logger(l => l
+                    .Filter.ByIncludingOnly(e => e.Level == LogEventLevel.Information)
+                    .WriteTo.File("Logs/info_logs.txt"))
+                .CreateLogger();
+
             services.AddDbContext<AppDbContext>(
                 optionsBuilder => optionsBuilder.UseInMemoryDatabase("InMemoryDb"));
 
-            services.AddControllersWithViews();
+            services.AddControllersWithViews(options =>
+            {
+                options.Filters.Add(new ErrorHandlingFilter());
+            });
 
             services.AddScoped<IBrainstormSessionRepository,
                 EFStormSessionRepository>();

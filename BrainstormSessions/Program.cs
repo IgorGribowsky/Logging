@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
-using Serilog;
 
 namespace BrainstormSessions
 {
@@ -8,10 +7,6 @@ namespace BrainstormSessions
     {
         public static void Main(string[] args)
         {
-            Log.Logger = new LoggerConfiguration()
-            .WriteTo.File
-            .CreateBootstrapLogger();
-
             CreateHostBuilder(args).Build().Run();
         }
 

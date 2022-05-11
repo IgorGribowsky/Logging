@@ -2,6 +2,7 @@
 using BrainstormSessions.Core.Interfaces;
 using BrainstormSessions.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using Serilog;
 
 namespace BrainstormSessions.Controllers
 {
@@ -25,6 +26,7 @@ namespace BrainstormSessions.Controllers
             var session = await _sessionRepository.GetByIdAsync(id.Value);
             if (session == null)
             {
+                Log.Debug($"Session with id {id} is not founded");
                 return Content("Session not found.");
             }
 
