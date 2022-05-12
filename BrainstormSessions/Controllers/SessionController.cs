@@ -10,9 +10,12 @@ namespace BrainstormSessions.Controllers
     {
         private readonly IBrainstormSessionRepository _sessionRepository;
 
-        public SessionController(IBrainstormSessionRepository sessionRepository)
+        private readonly ILogger _logger;
+
+        public SessionController(IBrainstormSessionRepository sessionRepository, ILogger logger)
         {
             _sessionRepository = sessionRepository;
+            _logger = logger;
         }
 
         public async Task<IActionResult> Index(int? id)
@@ -26,7 +29,6 @@ namespace BrainstormSessions.Controllers
             var session = await _sessionRepository.GetByIdAsync(id.Value);
             if (session == null)
             {
-                Log.Debug($"Session with id {id} is not founded");
                 return Content("Session not found.");
             }
 
@@ -36,6 +38,8 @@ namespace BrainstormSessions.Controllers
                 Name = session.Name,
                 Id = session.Id
             };
+            _logger.Debug($"Name = {viewModel.Name}");
+            _logger.Debug($"DateCreated = {viewModel.DateCreated}");
 
             return View(viewModel);
         }

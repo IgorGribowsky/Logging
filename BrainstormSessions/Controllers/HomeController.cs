@@ -14,16 +14,19 @@ namespace BrainstormSessions.Controllers
     {
         private readonly IBrainstormSessionRepository _sessionRepository;
 
-        public HomeController(IBrainstormSessionRepository sessionRepository)
+        private readonly ILogger _logger;
+
+        public HomeController(IBrainstormSessionRepository sessionRepository, ILogger logger)
         {
             _sessionRepository = sessionRepository;
+            _logger = logger;
         }
 
         public async Task<IActionResult> Index()
         {
-            Log.Information($"Session list loading started");
+            _logger.Information($"Session list loading started");
             var sessionList = await _sessionRepository.ListAsync();
-            Log.Information($"Session list loading finished");
+            _logger.Information($"Session list loading finished");
 
             var model = sessionList.Select(session => new StormSessionViewModel()
             {
@@ -47,18 +50,18 @@ namespace BrainstormSessions.Controllers
         {
             if (!ModelState.IsValid)
             {
-                Log.Information($"Session {model.SessionName} is invalid. BadRequest returned");
+                _logger.Warning($"Session {model.SessionName} is invalid. BadRequest returned");
                 return BadRequest(ModelState);
             }
             else
             {
-                Log.Information($"Session {model.SessionName} creation started");
+                _logger.Information($"Session {model.SessionName} creation started");
                 await _sessionRepository.AddAsync(new BrainstormSession()
                 {
                     DateCreated = DateTimeOffset.Now,
                     Name = model.SessionName
                 });
-                Log.Information($"Session {model.SessionName} created");
+                _logger.Information($"Session {model.SessionName} created");
             }
 
             return RedirectToAction(actionName: nameof(Index));

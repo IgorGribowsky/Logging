@@ -12,14 +12,17 @@ namespace BrainstormSessions.Infrastructure
     {
         private readonly AppDbContext _dbContext;
 
-        public EFStormSessionRepository(AppDbContext dbContext)
+        private readonly ILogger _logger;
+
+        public EFStormSessionRepository(AppDbContext dbContext, ILogger logger)
         {
             _dbContext = dbContext;
+            _logger = logger;
         }
 
         public Task<BrainstormSession> GetByIdAsync(int id)
         {
-            Log.Debug($"GetByIdAsync execution started. Id: {id}");
+            _logger.Debug($"GetByIdAsync execution started. Id: {id}");
 
             var session = _dbContext.BrainstormSessions
                 .Include(s => s.Ideas)
@@ -27,11 +30,11 @@ namespace BrainstormSessions.Infrastructure
 
             if (session == null)
             {
-                Log.Debug($"GetByIdAsync executed. Session with id = {id} is not found");
+                _logger.Debug($"GetByIdAsync executed. Session with id = {id} is not found");
             }
             else
             {
-                Log.Debug($"GetByIdAsync executed. Session with id = {id} is found");
+                _logger.Debug($"GetByIdAsync executed. Session with id = {id} is found");
             }
 
             return session;
@@ -39,38 +42,38 @@ namespace BrainstormSessions.Infrastructure
 
         public Task<List<BrainstormSession>> ListAsync()
         {
-            Log.Debug($"ListAsync execution started");
+            _logger.Debug($"ListAsync execution started");
 
             var sessions = _dbContext.BrainstormSessions
                 .Include(s => s.Ideas)
                 .OrderByDescending(s => s.DateCreated)
                 .ToListAsync();
 
-            Log.Debug($"ListAsync executed");
+            _logger.Debug($"ListAsync executed");
 
             return sessions;
         }
 
         public Task AddAsync(BrainstormSession session)
         {
-            Log.Debug($"AddAsync execution started");
+            _logger.Debug($"AddAsync execution started");
 
             _dbContext.BrainstormSessions.Add(session);
             var result = _dbContext.SaveChangesAsync();
 
-            Log.Debug($"AddAsync executed");
+            _logger.Debug($"AddAsync executed");
 
             return result;
         }
 
         public Task UpdateAsync(BrainstormSession session)
         {
-            Log.Debug($"AddAsync execution started");
+            _logger.Debug($"AddAsync execution started");
 
             _dbContext.Entry(session).State = EntityState.Modified;
             var result = _dbContext.SaveChangesAsync();
 
-            Log.Debug($"AddAsync executed");
+            _logger.Debug($"AddAsync executed");
 
             return result;
         }

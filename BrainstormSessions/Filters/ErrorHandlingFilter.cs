@@ -6,6 +6,13 @@ namespace BrainstormSessions.Filters
 {
     public class ErrorHandlingFilter : Attribute, IActionFilter
     {
+        private readonly ILogger _logger;
+
+        public ErrorHandlingFilter(ILogger logger)
+        {
+            _logger = logger;
+        }
+
         public void OnActionExecuting(ActionExecutingContext context)
         {
         }
@@ -14,7 +21,7 @@ namespace BrainstormSessions.Filters
         {
             if (context.Exception != null)
             {
-                Log.Error(context.Exception.Message + context.Exception.StackTrace);
+                _logger.Error(context.Exception.Message + context.Exception.StackTrace);
             }
         }
     }
